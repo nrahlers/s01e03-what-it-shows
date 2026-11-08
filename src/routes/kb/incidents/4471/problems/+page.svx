@@ -21,11 +21,17 @@ signature: 'v1.eyJzdWIiOiIxMzI5NiIsImF1ZCI6ImNoYWxsZW5nZTp3aGF0LWl0LXNob3dzIiwia
 
 [#4471](/kb/incidents/4471) says one bug: the parser reads dates month first. The reports say
 more. Every report was merged on its subject line ([decision 0001](/kb/decisions/0001-dedupe-by-subject)),
-so nobody read the bodies, and three problems ended up in one ticket with one fix queued.
+so nobody read the bodies, and three problems ended up in one ticket with one fix.
 
 <Callout kind="warn">
-The queued parser fix does not close #4471. Two of the problems below survive it.
+#4471 was closed on 5 October after the parser fix shipped. One problem below is still open: the one-day move.
 </Callout>
+
+| problem | status | why |
+|---|---|---|
+| `parser` | fixed | fix(dates): parse dd/mm for eu locales |
+| `hint` | won't fix | booking-v3 form retired |
+| `one-day-move` | **open** | not covered by either change |
 
 ## What the reports hold
 
@@ -46,15 +52,16 @@ Intake's tag is a guess from the reporter's browser, so it is not used. The tabl
 ## The problems
 
 - **`parser`:** the shared parser reads every date month first, so a day-first tenant's 07/04 becomes
-  4 July. This is the fix already queued.
+  4 July. Fixed: "fix(dates): parse dd/mm for eu locales".
 - **`hint`:** `booking-v3` shows `MM/DD/YYYY` as the hint for day-first tenants and then reads the input
-  day first. The parser fix does not touch it. Fix the hint, or read the field the way the hint says.
+  day first. Won't fix: the booking-v3 form is retired, so no new reports can come in this way.
 - **`one-day-move`:** the date shifts by one day ("Lisbon got Tuesday, Toronto got Monday", "the invite
-  arrived before I made the booking"). This points at time zones, not at day/month order. The parser fix does not touch it.
+  arrived before I made the booking"). This points at time zones, not at day/month order. Still open: neither the parser fix nor retiring booking-v3 touches it.
 
 ## What to change
 
-- Keep #4471 for `parser`. Track `hint` and `one-day-move` in their own tickets (linked in the table).
+- Closing #4471 did not close every problem in it. Keep the `one-day-move` ticket open until someone finds the time-zone bug.
+- `parser` is closed as fixed and `hint` as won't fix (linked in the table).
 - Read the body before you merge. Matching subjects grouped three bugs under one fix.
 - Re-read [triage: duplicate reports](/kb/triage/dedupe); it has not been reviewed since June 2024.
 
