@@ -1,0 +1,61 @@
+---
+layout: runbook
+title: '#4471 · three problems, not one'
+owner: nrahlers
+status: draft
+reviewed: 2026-11-07
+signature: 'v1.eyJzdWIiOiIxMzI5NiIsImF1ZCI6ImNoYWxsZW5nZTp3aGF0LWl0LXNob3dzIiwiaWF0IjoxNzk0MTA0MTM4LCJleHAiOjE3OTQxOTA1Mzh9.wffT_ZHaw4cFBtgWxR88F_xZYpBcc9V9BqbwU7yXKGM'
+---
+
+<script>
+  import ProblemTable from '#lib/kb/ProblemTable.svelte';
+  import Callout from '#lib/kb/Callout.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+
+  const ISSUES = {
+    parser: 'https://github.com/nrahlers/s01e03-what-it-shows/issues/1',
+    hint: 'https://github.com/nrahlers/s01e03-what-it-shows/issues/2',
+    'one-day-move': 'https://github.com/nrahlers/s01e03-what-it-shows/issues/3',
+  };
+</script>
+
+[#4471](/kb/incidents/4471) says one bug: the parser reads dates month first. The reports say
+more. Every report was merged on its subject line ([decision 0001](/kb/decisions/0001-dedupe-by-subject)),
+so nobody read the bodies, and three problems ended up in one ticket with one fix queued.
+
+<Callout kind="warn">
+The queued parser fix does not close #4471. Two of the problems below survive it.
+</Callout>
+
+## What the reports hold
+
+<ProblemTable ticket={4471} issues={ISSUES} />
+
+## How each report is placed
+
+1. **One id, one report.** The ticket export pages overlap, so some reports appear twice. Count each id once.
+2. **One-day move first.** The desk's notes list reports where the date moved by one day
+   (`oneDayMove` in `desk-notes.json`). A day/month swap cannot move a date by one day, so these are
+   their own problem, whatever the tenant.
+3. **Then the tenant decides** (`causes.ts`). Every tenant writes the day first. A report that came in
+   through a `booking-v3` form is `hint`: that form prints `MM/DD/YYYY` under its date field, people type
+   month first, and the form reads day first. Every other report is `parser`.
+
+Intake's tag is a guess from the reporter's browser, so it is not used. The table shows how often it matched.
+
+## The problems
+
+- **`parser`:** the shared parser reads every date month first, so a day-first tenant's 07/04 becomes
+  4 July. This is the fix already queued.
+- **`hint`:** `booking-v3` shows `MM/DD/YYYY` as the hint for day-first tenants and then reads the input
+  day first. The parser fix does not touch it. Fix the hint, or read the field the way the hint says.
+- **`one-day-move`:** the date shifts by one day ("Lisbon got Tuesday, Toronto got Monday", "the invite
+  arrived before I made the booking"). This points at time zones, not at day/month order. The parser fix does not touch it.
+
+## What to change
+
+- Keep #4471 for `parser`. Track `hint` and `one-day-move` in their own tickets (linked in the table).
+- Read the body before you merge. Matching subjects grouped three bugs under one fix.
+- Re-read [triage: duplicate reports](/kb/triage/dedupe); it has not been reviewed since June 2024.
+
+<RenderStamp {signature} />
